@@ -11,10 +11,24 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: "pg_isready -U threat -d threat_exchange"
+      test: ["CMD-SHELL", "pg_isready -U threat -d threat_exchange"]
       interval: 5s
       timeout: 3s
       retries: 5
+
+  app:
+    build:
+      context: ..             # Контекст сборки — корень проекта (где лежит Dockerfile)
+      dockerfile: Dockerfile
+    container_name: threat-exchange-app
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgres://threat:threat@postgres:5432/threat_exchange?sslmode=disable
+      - HTTP_ADDR=:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   pgdata:
