@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-
+	"log/slog"
 	"github.com/bublik008/threat-exchange/internal/api/gen"
 	"github.com/bublik008/threat-exchange/internal/repository"
 	"github.com/bublik008/threat-exchange/internal/service"
@@ -74,6 +74,7 @@ func (s *Server) handleError(w http.ResponseWriter, err error) {
 		respondError(w, http.StatusConflict, "Threat already exists", err.Error())
 	default:
 		// Любые другие ошибки (например, упала БД) отдаем как 500.
+		slog.Error("internal server error", "error", err)
 		respondError(w, http.StatusInternalServerError, "Internal server error", "")
 	}
 }
