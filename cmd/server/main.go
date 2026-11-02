@@ -71,9 +71,17 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	go func() {
-		slog.Info("starting HTTP server", "addr", cfg.HTTPAddr)
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		go func() {
+		var err error
+		if cfg.TLSCertFile != "" && cfg.TLSKeyFile != "" {
+			slog.Info("starting HTTPS server with TLS", "addr", cfg.HTTPAddr)
+			err = srv.ListenAndServeTLS(cfg.TLSCertFile, cfg.TLSKeyFile)
+		} else {
+			slog.Info("starting HTTP server", "addr", cfg.HTTPAddr)
+			err = srv.ListenAndServe()
+		}
+
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("server error", "error", err)
 			os.Exit(1)
 		}
